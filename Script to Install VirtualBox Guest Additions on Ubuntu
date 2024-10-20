@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Check if the script is run with sudo privileges
+if [ "$EUID" -ne 0 ]; then 
+  echo "Please run as root or use sudo."
+  exit 1
+fi
+
+# Update your system
+echo "Updating the system..."
+sudo apt update && sudo apt upgrade -y
+
+# Install required dependencies
+echo "Installing required packages..."
+sudo apt install -y build-essential dkms linux-headers-$(uname -r)
+
+# Create mount point and mount CD-ROM
+echo "Mounting Guest Additions CD..."
+sudo mkdir -p /media/cdrom
+if sudo mount /dev/cdrom /media/cdrom; then
+  echo "Guest Additions CD mounted successfully."
+else
+  echo "Failed to mount Guest Additions CD. Please ensure it is inserted."
+  exit 1
+fi
+
+# Run the Guest Additions installer
+echo "Running Guest Additions installer..."
+if sudo /media/cdrom/VBoxLinuxAdditions.run; then
+  echo "Guest Additions installed successfully."
+else
+  echo "Guest Additions installation failed."
+  exit 1
+fi
+
+# Reboot the system
+echo "Rebooting the system..."
+sudo reboot
